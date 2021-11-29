@@ -2,20 +2,9 @@
 
 const express = require('express');
 const authenticateUser = require('./middleware/auth-user');
+const asyncHandler = require('./middleware/async-handler');
 
 const router = express.Router();
-
-// handler function for the routes
-function asyncHandler(callback) {
-    return async (req, res, next) => {
-        try {
-            await callback(req, res, next);
-        } catch (error) {
-            // pass errors to the global error handler
-            next(error);
-        }
-    }
-}
 
 // TODO: Create GET route for users
 router.get('/users', authenticateUser, asyncHandler(async (req, res) => {
