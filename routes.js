@@ -22,24 +22,29 @@ router.get('/users', authenticateUser, asyncHandler(async (req, res) => {
 // POST route for users
 router.post('/users', asyncHandler(async (req, res) => {
     try {
-        // If we wanted to hash the password
-        //const user = User.build(req.body);
-        //user.password = bcrypt.hashSync(user.password);
         await User.create(req.body);
         res.status(201).json({ "message": "Account successfully created!" });
     } catch (error) {
-      if (error.name === 'SequelizeValidationError' || error.name === 'SequelizeUniqueConstraintError') {
-        const errors = error.errors.map(err => err.message);
-        res.status(400).json({ errors });   
-      } else {
-        throw error;
-      }
+        if (error.name === 'SequelizeValidationError' || error.name === 'SequelizeUniqueConstraintError') {
+            const errors = error.errors.map((err) => err.message);
+            res.status(400).json({ errors });
+        } else {
+            throw error;
+        }
     }
-  }));
+}));
 
 // GET route for courses
 router.get('/courses', asyncHandler(async (req, res) => {
     const courses = await Course.findAll({
+        attributes: [
+            'id',
+            'title', 
+            'description', 
+            'estimatedTime', 
+            'materialsNeeded',
+            'userId'
+        ],
         include: [{
             model: User,
             as: 'user',
@@ -69,12 +74,91 @@ router.get('/courses/:id', asyncHandler(async (req, res) => {
     }
 }));
 
-// TODO: POST route that will create a new course, set the Location header to the URI for the newly created course, and return a 201 HTTP status code and no content.
-
+// POST route that will create a new course, set the Location header to the URI for the newly created course, and return a 201 HTTP status code and no content.
+router.post('/courses', authenticateUser, asyncHandler(async (req, res) => {
+    try {
+        const user = req.currentUser;
+        const course = await Course.create({
+            title: req.body.title,
+            description: req.body.description,
+            estimatedTime: req.body.estimatedTime,
+            materialsNeeded: req.body.materialsNeeded,
+            userId: user.id,
+        });
+        res.status(201).location(`/courses/${course.id}`).json();
+      } catch (error) {
+        if (error.name === 'SequelizeValidationError' || error.name === 'SequelizeUniqueConstraintError') {
+            const errors = error.errors.map((err) => err.message);
+            res.status(400).json({ errors });
+        } else {
+            throw error;
+        }
+      }
+}));
 
 
 // TODO: PUT route that will update the corresponding course and return a 204 HTTP status code and no content.
+router.put('/courses/:id', authenticateUser, asyncHandler(async (req, res) => {
+    try {
+        const user = req.currentUser;
+        const id = req.params.id;
+        const course = await Course.findByPk(id);
+
+        if(course) {
+            if(course.userId === user.id) {
+                if (!req.body.title) {
+                    req.body.title = '';
+                }
+                if (!req.body.description) {
+                    req.body.description = '';
+                }
+                await Course.update(req.body, {
+                    where: {
+                        id: id,
+                    },
+                });
+                res.status(204).json();
+            } else {
+                res.status(401).json({
+                    message: 'Access Denied: Only course owner may update course.'
+                });
+                error.name = 'AccessError';
+		        throw error;
+            }
+        } else {
+            res.status(403).json({
+                message: 'Course does not exist'
+            });
+        }
+    } catch (error) {
+        if (error.name === 'SequelizeValidationError' || error.name === 'SequelizeUniqueConstraintError') {
+            const errors = error.errors.map((err) => err.message);
+            res.status(400).json({ errors });
+        } else {
+            throw error;
+        }
+    }
+}));
 
 // TODO: DELETE route that will delete the corresponding course and return a 204 HTTP status code and no content.
+router.delete('/courses/:id', authenticateUser, asyncHandler(async (req, res) => {
+    const user = req.currentUser;
+    const courseId = req.params.id;
+    const course = await Course.findByPk(courseId);
+    if(course) {
+        if(course.userId === user.id) {
+            course.destroy(course);
+            res.status(204).json();
+        } else {
+            res.status(401).json({
+                message: 'Permission denied.'
+            });
+        }
+    } else {
+        res.status(403).json({
+            message: 'Unable to delete a course that does not exist'
+        });
+    }
+}));
 
 module.exports = router;
