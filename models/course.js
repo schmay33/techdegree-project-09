@@ -18,7 +18,10 @@ module.exports = (sequelize) => {
             validate: {
                 notNull: {
                     msg: 'Please, enter a title for the course'
-                }
+                },
+                notEmpty: {
+                    msg: 'Please provide a course title'
+                },
             }
         },
         description: {
@@ -27,8 +30,11 @@ module.exports = (sequelize) => {
             validate: {
                 notNull: {
                     msg: 'Please, enter a course description'
-                }
-            }
+                },
+                notEmpty: {
+                    msg: 'Please provide a course description'
+                },
+            },
         },
         estimatedTime: {
             type: DataTypes.STRING
