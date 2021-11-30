@@ -15,14 +15,16 @@ const app = express();
 // setup morgan which gives us http request logging
 app.use(morgan('dev'));
 
+// Setup request body JSON parsing.
+app.use(express.json());
+
 console.log('Testing the connection to the database..');
 (async () => {
     try {
-        
         await sequelize.authenticate();
         console.log("Database connection is successful!");
         console.log('Synchronizing the models with the database...');
-        await sequelize.sync();
+        await sequelize.sync({ force: false });
     } catch (error) {
         if (error.name === 'SequelizeValidationError') {
             const errors = error.errors.map(err => err.message);
