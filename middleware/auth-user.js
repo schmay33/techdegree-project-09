@@ -1,15 +1,7 @@
-'use strict';
-
 const auth = require('basic-auth');
 const { User } = require('../models');
 const bcrypt = require('bcryptjs');
 
-/**
- * Middleware to authenticate the request using Basic Authentication.
- * @param {Request} req - The Express Request object.
- * @param {Response} res - The Express Response object.
- * @param {Function} next - The function to call to pass execution to the next middleware.
- */
 const authenticateUser = async (req, res, next) => {
   let message;
   const credentials = auth(req);
@@ -24,7 +16,7 @@ const authenticateUser = async (req, res, next) => {
       const authenticated = bcrypt
         .compareSync(credentials.pass, user.password);
       if (authenticated) {
-        console.log(`Authentication successful for username: ${user.username}`);
+        console.log(`Authentication successful for username: ${user.emailAddress}`);
 
         // Store the user on the Request object.
         req.currentUser = user;
