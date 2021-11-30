@@ -5,13 +5,11 @@ const authenticateUser = require('./middleware/auth-user');
 const asyncHandler = require('./middleware/async-handler');
 const { User, Course } = require('./models');
 const router = express.Router();
-const bcrypt = require('bcryptjs');
-const user = require('./models/user');
 
 // Create GET route for users
 router.get('/users', authenticateUser, asyncHandler(async (req, res) => {
     const user = req.currentUser;
-    res.status(200);//.json({ "message": "Account successfully created!" });
+    res.status(200);
     res.json({
         firstName: user.firstName,
         lastName: user.lastName,
@@ -97,7 +95,7 @@ router.post('/courses', authenticateUser, asyncHandler(async (req, res) => {
 }));
 
 
-// TODO: PUT route that will update the corresponding course and return a 204 HTTP status code and no content.
+// PUT route that will update the corresponding course and return a 204 HTTP status code and no content.
 router.put('/courses/:id', authenticateUser, asyncHandler(async (req, res) => {
     try {
         const user = req.currentUser;
@@ -140,7 +138,7 @@ router.put('/courses/:id', authenticateUser, asyncHandler(async (req, res) => {
     }
 }));
 
-// TODO: DELETE route that will delete the corresponding course and return a 204 HTTP status code and no content.
+// DELETE route that will delete the corresponding course and return a 204 HTTP status code and no content.
 router.delete('/courses/:id', authenticateUser, asyncHandler(async (req, res) => {
     const user = req.currentUser;
     const courseId = req.params.id;
