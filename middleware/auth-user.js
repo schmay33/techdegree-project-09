@@ -7,9 +7,8 @@ const authenticateUser = async (req, res, next) => {
   const credentials = auth(req);
   
   console.log(credentials);
+  
   if (credentials) {
-    const count = await User.findAndCountAll().then(results => results.count);
-    console.log("Count: " + count);
     const user = await User.findOne({ where: {emailaddress: credentials.name} });
     
     if (user) {
