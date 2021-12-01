@@ -21,7 +21,7 @@ router.get('/users', authenticateUser, asyncHandler(async (req, res) => {
 router.post('/users', asyncHandler(async (req, res) => {
     try {
         await User.create(req.body);
-        res.status(201).json({ "message": "Account successfully created!" });
+        res.status(201).location('/').json();
     } catch (error) {
         if (error.name === 'SequelizeValidationError' || error.name === 'SequelizeUniqueConstraintError') {
             const errors = error.errors.map((err) => err.message);
@@ -55,6 +55,14 @@ router.get('/courses', asyncHandler(async (req, res) => {
 // route for courses by id, also return the user
 router.get('/courses/:id', asyncHandler(async (req, res) => {
     const course = await Course.findOne({ 
+        attributes: [
+            'id',
+            'title', 
+            'description', 
+            'estimatedTime', 
+            'materialsNeeded',
+            'userId'
+        ],
         where: { id: req.params.id },
         include: [{
             model: User,
@@ -117,7 +125,7 @@ router.put('/courses/:id', authenticateUser, asyncHandler(async (req, res) => {
                 });
                 res.status(204).json();
             } else {
-                res.status(401).json({
+                res.status(403).json({
                     message: 'Access Denied: Only course owner may update course.'
                 });
                 error.name = 'AccessError';
